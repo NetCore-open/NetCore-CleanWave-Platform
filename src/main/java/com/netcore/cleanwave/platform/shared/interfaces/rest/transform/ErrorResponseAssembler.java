@@ -20,7 +20,8 @@ import java.util.ResourceBundle;
 public class ErrorResponseAssembler {
     private static final String MESSAGE_BASENAME = "messages";
 
-    private ErrorResponseAssembler(){}
+    private ErrorResponseAssembler() {
+    }
 
     /**
      * Maps an ApplicationError to an appropriate HTTP ResponseEntity.
@@ -36,35 +37,36 @@ public class ErrorResponseAssembler {
         return new ResponseEntity<>(resource, statusCode);
     }
 
-   private static String toEntityNameFromErrorCode(String errorCode) {
+    private static String toEntityNameFromErrorCode(String errorCode) {
         if (errorCode.endsWith("_NOT_FOUND")) {
             return errorCode.replace("_NOT_FOUND", "").toLowerCase(Locale.ROOT);
         }
-       if (errorCode.endsWith("_CONFLICT")) {
-           return errorCode.replace("_CONFLICT", "").toLowerCase(Locale.ROOT);
-       }
-       return  "resource";
-   }
+        if (errorCode.endsWith("_CONFLICT")) {
+            return errorCode.replace("_CONFLICT", "").toLowerCase(Locale.ROOT);
+        }
+        return "resource";
+    }
 
-   private static String toSpecificMessageKeyFromErrorCode(String errorCode) {
-       return "error.%s.message".formatted(errorCode.toLowerCase(Locale.ROOT).replace('-', '-'));
-   }
+    private static String toSpecificMessageKeyFromErrorCode(String errorCode) {
+        return "error.%s.message".formatted(errorCode.toLowerCase(Locale.ROOT).replace('-', '-'));
+    }
 
-   private static String toMessageKeyFromErrorCode(String errorCode){
+    private static String toMessageKeyFromErrorCode(String errorCode) {
         return switch (errorCode) {
             case "VALIDATION_ERROR" -> "error.validation.message";
             case "BUSINESS_RULE_VIOLATION" -> "error.business-rule.message";
             case "UNEXPECTED_ERROR" -> "error.unexpected.message";
-            case String s when  s.endsWith("_NOT_FOUND") -> "error.not-found.message";
-            case String s when  s.endsWith("_CONFLICT") -> "error.conflict.message";
+            case String s when s.endsWith("_NOT_FOUND") -> "error.not-found.message";
+            case String s when s.endsWith("_CONFLICT") -> "error.conflict.message";
             default -> "error.generic.message";
         };
-   }
+    }
 
-   private static String toLocalizedMessageFromApplicationError(ApplicationError error) {
+    private static String toLocalizedMessageFromApplicationError(ApplicationError error) {
         String specificKey = toSpecificMessageKeyFromErrorCode(error.code());
-        String specificMessage = toLocalizedMessageOrNull(specificKey, error.details(), toEntityNameFromErrorCode(error.code()));
-        if (specificMessage!= null) {
+        String specificMessage = toLocalizedMessageOrNull(specificKey, error.details(),
+                toEntityNameFromErrorCode(error.code()));
+        if (specificMessage != null) {
             return specificMessage;
         }
 
@@ -73,27 +75,25 @@ public class ErrorResponseAssembler {
                 fallbackKey,
                 error.message(),
                 error.details(),
-                toEntityNameFromErrorCode(error.code())
-        );
-   }
+                toEntityNameFromErrorCode(error.code()));
+    }
 
+    private static String toLocalizedMessageOrNull(String key, Object... args) {
+        Locale locale = LocaleContextHolder.getLocale();
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle(MESSAGE_BASENAME, locale);
+            if (!bundle.containsKey(key)) {
+                return null;
+            }
+            String template = bundle.getString(key);
+            return MessageFormat.format(template, args);
+        } catch (MissingResourceException ex) {
+            return null;
+        }
 
-   private static String toLocalizedMessageOrNull(String key, Object... args) {
-       Locale locale = LocaleContextHolder.getLocale();
-       try {
-           ResourceBundle bundle = ResourceBundle.getBundle(MESSAGE_BASENAME, locale);
-           if (!bundle.containsKey(key)) {
-               return null;
-           }
-           String template = bundle.getString(key);
-           return MessageFormat.format(template, args);
-       } catch (MissingResourceException ex) {
-           return null;
-       }
+    }
 
-   }
-
-   private static String toLocalizedMessageWithFallBack(String key, String fallback, Object... args) {
+    private static String toLocalizedMessageWithFallBack(String key, String fallback, Object... args) {
         Locale locale = LocaleContextHolder.getLocale();
         try {
             ResourceBundle bundle = ResourceBundle.getBundle(MESSAGE_BASENAME, locale);
@@ -105,11 +105,13 @@ public class ErrorResponseAssembler {
         } catch (MissingResourceException ex) {
             return fallback;
         }
-   }
+    }
+
     /**
      * Determines the appropriate HTTP status code for a given error code.
      *
-     * @param errorCode the error code string (e.g., "PROFILE_NOT_FOUND", "VALIDATION_ERROR")
+     * @param errorCode the error code string (e.g., "PROFILE_NOT_FOUND",
+     *                  "VALIDATION_ERROR")
      * @return the corresponding HttpStatus
      */
     private static HttpStatusCode toStatusFromErrorCode(String errorCode) {
@@ -123,4 +125,3 @@ public class ErrorResponseAssembler {
         };
     }
 }
-
