@@ -1,5 +1,7 @@
 package com.netcore.cleanwave.platform.shared.application.result;
 
+import org.jspecify.annotations.NullMarked;
+
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -9,6 +11,7 @@ import java.util.function.Function;
  * @param <T> success value type
  * @param <E> failure value type
  */
+@NullMarked
 public sealed interface Result<T, E> permits Result.Success, Result.Failure {
 
     /**
@@ -53,6 +56,26 @@ public sealed interface Result<T, E> permits Result.Success, Result.Failure {
             return Optional.of(value);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns an Optional containing the value if this is a success, otherwise an empty Optional.
+     */
+    default Optional<T> toOptional() {
+        return switch (this) {
+            case Success<T, E> s -> Optional.of(s.value);
+            case Failure<T, E> f -> Optional.empty();
+        };
+    }
+
+    /**
+     * Extracts the value if successful, or returns the given default if failed.
+     */
+    default T getOrElse(T defaultValue) {
+        return switch (this) {
+            case Success<T, E> s -> s.value;
+            case Failure<T, E> f -> defaultValue;
+        };
     }
 
     /**
@@ -103,6 +126,45 @@ public sealed interface Result<T, E> permits Result.Success, Result.Failure {
      E error = ((Failure<T, E>) this).error();
      return onFailure.apply(error);
     }
+
+    /**
+     * Applies a function to the error if this is a failure, otherwise returns this unchanged.
+     */
+    default <E2> Result<T, E2> mapError(Function<E, E2> f) {
+        return switch (this) {
+            case Success<T, E> s -> Result.success(s.value);
+            case Failure<T, E> failure -> Result.failure(f.apply(failure.error));
+        };
+    }
+
+    /**
+     * Applies a function to the value if this is a success, producing a new Result.
+     */
+    default <T2> Result<T2, E> flatMap(Function<T, Result<T2, E>> f) {
+        return switch (this) {
+            case Success<T, E> s -> f.apply(s.value);
+            case Failure<T, E> failure -> Result.failure(failure.error);
+        };
+    }
+
+    /**
+     * Applies a function to the value if this is a success.
+     */
+    default <T2> Result<T2, E> map(Function<T, T2> f) {
+        return switch (this) {
+            case Success<T, E> s -> Result.success(f.apply(s.value));
+            case Failure<T, E> failure -> Result.failure(failure.error);
+        };
+    }
+
+    /**
+     * Applies a function to the error if this is a failure.
+     * Unlike mapError, this takes a Result, allowing fallback recovery.
+     */
+    default Result<T, E> recover(Function<E, Result<T, E>> f) {
+        return switch (this) {
+            case Success<T, E> s -> this;
+            case Failure<T, E> failure -> f.apply(failure.error);
+        };
+    }
 }
-
-
