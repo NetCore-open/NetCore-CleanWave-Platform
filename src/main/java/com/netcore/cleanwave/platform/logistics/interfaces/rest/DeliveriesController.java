@@ -12,6 +12,9 @@ import com.netcore.cleanwave.platform.logistics.interfaces.rest.resources.Update
 import com.netcore.cleanwave.platform.logistics.interfaces.rest.transform.CreateDeliveryCommandFromResourceAssembler;
 import com.netcore.cleanwave.platform.logistics.interfaces.rest.transform.DeliveryResourceFromEntityAssembler;
 import com.netcore.cleanwave.platform.logistics.interfaces.rest.transform.UpdateDeliveryStatusCommandFromResourceAssembler;
+import com.netcore.cleanwave.platform.shared.application.result.ApplicationError;
+import com.netcore.cleanwave.platform.shared.application.result.Result;
+import com.netcore.cleanwave.platform.shared.interfaces.rest.transform.ErrorResponseAssembler;
 import com.netcore.cleanwave.platform.shared.interfaces.rest.transform.ResponseEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jspecify.annotations.NullMarked;
@@ -132,9 +135,9 @@ public class DeliveriesController {
     public ResponseEntity<?> deleteDelivery(@PathVariable Long deliveryId) {
         var command = new DeleteDeliveryCommand(deliveryId);
         var result = deliveryCommandService.handle(command);
-        if (result.isSuccess()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result.getFailure().message());
+        return switch (result) {
+            case Result.Success<Void, ApplicationError> success -> ResponseEntity.noContent().build();
+            case Result.Failure<Void, ApplicationError> failure -> ErrorResponseAssembler.toErrorResponseFromApplicationError(failure.error());
+        };
     }
 }

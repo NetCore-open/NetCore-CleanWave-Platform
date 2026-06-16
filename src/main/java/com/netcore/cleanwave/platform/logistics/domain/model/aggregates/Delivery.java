@@ -10,6 +10,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * Aggregate root for the Logistics bounded context.
@@ -57,12 +58,12 @@ public class Delivery extends AbstractDomainAggregateRoot<Delivery> {
     @Getter
     @Setter
     @Nullable
-    private java.util.Date createdAt;
+    private Date createdAt;
 
     @Getter
     @Setter
     @Nullable
-    private java.util.Date updatedAt;
+    private Date updatedAt;
 
     /**
      * Default constructor. Initialises the delivery status to {@link DeliveryStatus#PENDING}.
