@@ -6,14 +6,18 @@ import com.netcore.cleanwave.platform.profiles.domain.model.commands.CreateProfi
 import com.netcore.cleanwave.platform.profiles.domain.model.queries.GetProfileByEmailQuery;
 import com.netcore.cleanwave.platform.profiles.domain.model.valueobjects.EmailAddress;
 import com.netcore.cleanwave.platform.profiles.interfaces.acl.ProfilesContextFacade;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.stereotype.Service;
 
 /**
  * Application-layer implementation of the Profiles ACL facade.
  *
  * <p>Provides a simplified integration surface for other bounded contexts that need profile
- * operations without coupling to Profiles internal models.</p>
+ * operations without coupling to the Profiles internal domain models. Implements the
+ * Anti-Corruption Layer (ACL) pattern, translating external requests into Profiles
+ * domain commands and queries.</p>
  */
+@NullMarked
 @Service
 public class ProfilesContextFacadeImpl implements ProfilesContextFacade {
     private final ProfileCommandService profileCommandService;
@@ -27,9 +31,18 @@ public class ProfilesContextFacadeImpl implements ProfilesContextFacade {
 
 
     /**
-     * Creates a profile and returns its identifier
+     * Creates a profile and returns its persistence identifier.
      *
-     * @return created profile identifier or {@code 0L} when creation fails.
+     * @param firstName  the person's first name
+     * @param lastname   the person's last name
+     * @param email      the contact email address
+     * @param street     the street name
+     * @param number     the street number
+     * @param city       the city name
+     * @param postalCode the postal / ZIP code
+     * @param country    the country name
+     * @return the created profile's persistence identity,
+     *         or {@code 0L} when creation fails
      */
     @Override
     public Long createProfile(String firstName, String lastname, String email,
@@ -43,10 +56,11 @@ public class ProfilesContextFacadeImpl implements ProfilesContextFacade {
     }
 
     /**
-     * Fetches a profile identifier by email.
+     * Fetches a profile's persistence identifier by email address.
      *
-     * @param email profile email address
-     * @return profile identifier, or {@code 0L} when not found
+     * @param email the contact email address to look up
+     * @return the profile's persistence identity,
+     *         or {@code 0L} when not found
      */
     @Override
     public Long fetchProfileIdByEmail(String email) {
@@ -55,4 +69,3 @@ public class ProfilesContextFacadeImpl implements ProfilesContextFacade {
         return profile.isEmpty() ? Long.valueOf(0L) : profile.get().getId();
     }
 }
-

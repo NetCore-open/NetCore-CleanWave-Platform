@@ -8,9 +8,22 @@ import com.netcore.cleanwave.platform.profiles.domain.model.valueobjects.StreetA
 import com.netcore.cleanwave.platform.shared.domain.model.aggregates.AbstractDomainAggregateRoot;
 import lombok.Getter;
 import lombok.Setter;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Objects;
 
+/**
+ * Aggregate root for the Profiles bounded context.
+ *
+ * <p>Encapsulates the identity, name, contact email and postal address of a platform
+ * user. As an aggregate root it owns the invariants that govern those value objects
+ * and registers a {@link ProfileCreatedEvent} after it is persisted so that
+ * other bounded contexts can react to its creation.</p>
+ *
+ * <p>JPA persistence concerns are intentionally kept out of this class;
+ * they live in the infrastructure layer's {@code ProfilePersistenceEntity}.</p>
+ */
+@NullMarked
 public class Profile extends AbstractDomainAggregateRoot<Profile> {
     @Getter
     @Setter
@@ -22,7 +35,13 @@ public class Profile extends AbstractDomainAggregateRoot<Profile> {
     private StreetAddress streetAddress;
 
     /**
-     * Creates a profile from the provided domain values
+     * Reconstructs an existing profile from its full set of domain values,
+     * including a known persistence identity.
+     *
+     * @param id            the persistence identity already assigned to this profile
+     * @param name          the person's full name
+     * @param emailAddress  the contact email address
+     * @param streetAddress the postal address
      */
     public Profile(Long id, PersonName name, EmailAddress emailAddress, StreetAddress streetAddress) {
         this.id = id;
@@ -32,14 +51,30 @@ public class Profile extends AbstractDomainAggregateRoot<Profile> {
     }
 
     /**
-     * Creates a profile from the provided domain values
+     * Creates a new profile from domain value objects without an assigned identity.
+     * The identity will be set by the infrastructure layer after persistence.
+     *
+     * @param name          the person's full name
+     * @param emailAddress  the contact email address
+     * @param streetAddress the postal address
      */
     public Profile(PersonName name, EmailAddress emailAddress, StreetAddress streetAddress) {
         this(null, name, emailAddress, streetAddress);
     }
 
     /**
-     * Constructor with first name, last name, email, street, number, city, postal code and country.
+     * Convenience constructor that builds the profile from raw string primitives,
+     * delegating value-object construction and invariant validation to the
+     * corresponding value objects.
+     *
+     * @param firstName  the person's first name
+     * @param lastName   the person's last name
+     * @param email      the contact email address
+     * @param street     the street name
+     * @param number     the street number
+     * @param city       the city name
+     * @param postalCode the postal / ZIP code
+     * @param country    the country name
      */
     public Profile(String firstName, String lastName, String email, String street, String number, String city,
                    String postalCode, String country) {
@@ -49,13 +84,22 @@ public class Profile extends AbstractDomainAggregateRoot<Profile> {
     }
 
     /**
-     * Constructor with a CreateProfileCommand
+     * Creates a profile from a {@link CreateProfileCommand}.
+     * Delegates to the raw-string primitive constructor.
+     *
+     * @param command the create-profile command carrying the profile data
      */
     public Profile(CreateProfileCommand command) {
         this(   command.firstName(), command.lastName(),
                 command.email(),
                 command.street(), command.number(), command.city(), command.postalCode(), command.country());
     }
+
+    /**
+     * Updates the person's name.
+     *
+     * @param name the new name; must not be {@code null}
+     */
     public void setName(PersonName name) { this.name = Objects.requireNonNull(name, "name must not be null"); }
 
     public EmailAddress getEmailAddressValue() { return emailAddress; }
@@ -73,4 +117,6 @@ public class Profile extends AbstractDomainAggregateRoot<Profile> {
      */
     public void onCreated() { registerDomainEvent(ProfileCreatedEvent.from(this));}
 }
+
+
 

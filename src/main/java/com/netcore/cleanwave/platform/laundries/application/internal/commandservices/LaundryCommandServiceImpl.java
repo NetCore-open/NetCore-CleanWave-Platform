@@ -7,8 +7,18 @@ import com.netcore.cleanwave.platform.laundries.domain.model.commands.UpdateLaun
 import com.netcore.cleanwave.platform.laundries.domain.repositories.LaundryRepository;
 import com.netcore.cleanwave.platform.shared.application.result.ApplicationError;
 import com.netcore.cleanwave.platform.shared.application.result.Result;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.stereotype.Service;
 
+/**
+ * Application service implementation that handles laundry write operations.
+ *
+ * <p>Implements {@link LaundryCommandService} and orchestrates creation and
+ * status-update operations on {@link Laundry} aggregates. Enforces the
+ * uniqueness invariant on laundry name before delegating persistence to the
+ * {@link LaundryRepository}.</p>
+ */
+@NullMarked
 @Service
 public class LaundryCommandServiceImpl implements LaundryCommandService {
     private final LaundryRepository laundryRepository;
@@ -17,6 +27,17 @@ public class LaundryCommandServiceImpl implements LaundryCommandService {
         this.laundryRepository = laundryRepository;
     }
 
+    /**
+     * Handles the {@link CreateLaundryCommand} to create and persist a new laundry.
+     *
+     * <p>Rejects the command with a conflict error if a laundry with the same name
+     * already exists. Unexpected exceptions are caught and surfaced as
+     * {@code UNEXPECTED_ERROR} results.</p>
+     *
+     * @param command the create-laundry command
+     * @return {@code Result.success} with the persisted laundry,
+     *         or {@code Result.failure} with the relevant {@link ApplicationError}
+     */
     @Override
     public Result<Laundry, ApplicationError> handle(CreateLaundryCommand command) {
         if (laundryRepository.existsByName(command.name())) {
@@ -33,6 +54,13 @@ public class LaundryCommandServiceImpl implements LaundryCommandService {
         }
     }
 
+    /**
+     * Handles the {@link UpdateLaundryStatusCommand} to change a laundry's operational status.
+     *
+     * @param command the update-laundry-status command carrying the laundry id and new status
+     * @return {@code Result.success} with the updated laundry,
+     *         or {@code Result.failure} with a {@code NOT_FOUND} error if the laundry does not exist
+     */
     @Override
     public Result<Laundry, ApplicationError> handle(UpdateLaundryStatusCommand command) {
         var laundryOpt = laundryRepository.findById(command.laundryId());

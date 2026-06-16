@@ -7,6 +7,19 @@ import com.netcore.cleanwave.platform.profiles.infrastructure.persistence.jpa.em
 import com.netcore.cleanwave.platform.shared.infrastructure.persistence.jpa.entities.AuditableAbstractPersistenceEntity;
 import jakarta.persistence.*;
 
+/**
+ * JPA persistence entity for the
+ * {@link com.netcore.cleanwave.platform.profiles.domain.model.aggregates.Profile}
+ * domain aggregate.
+ *
+ * <p>Maps the profile's name, email address and street address to the
+ * {@code profiles} database table using embedded value objects and a
+ * custom JPA converter. Identity and auditing fields are inherited from
+ * {@link AuditableAbstractPersistenceEntity}.</p>
+ *
+ * <p>This class intentionally lives in the infrastructure layer to keep
+ * JPA concerns out of the domain model.</p>
+ */
 @Entity
 @Table(name = "profiles")
 public class ProfilePersistenceEntity extends AuditableAbstractPersistenceEntity {
@@ -55,4 +68,3 @@ public class ProfilePersistenceEntity extends AuditableAbstractPersistenceEntity
         this.streetAddress = streetAddress;
     }
 }
-

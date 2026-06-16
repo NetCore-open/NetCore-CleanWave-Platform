@@ -9,6 +9,18 @@ import lombok.Setter;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * JPA persistence entity for the
+ * {@link com.netcore.cleanwave.platform.iam.domain.model.aggregates.User}
+ * domain aggregate.
+ *
+ * <p>Maps the user's credentials and roles to the {@code users} and
+ * {@code user_roles} database tables. Identity and auditing fields are
+ * inherited from {@link AuditableAbstractPersistenceEntity}.</p>
+ *
+ * <p>This class intentionally lives in the infrastructure layer to keep
+ * JPA concerns out of the domain model.</p>
+ */
 @Entity
 @Table(name = "users")
 @Getter

@@ -7,8 +7,17 @@ import com.netcore.cleanwave.platform.profiles.domain.model.valueobjects.EmailAd
 import com.netcore.cleanwave.platform.profiles.domain.repositories.ProfileRepository;
 import com.netcore.cleanwave.platform.shared.application.result.ApplicationError;
 import com.netcore.cleanwave.platform.shared.application.result.Result;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.stereotype.Service;
 
+/**
+ * Application service implementation that handles profile write operations.
+ *
+ * <p>Implements {@link ProfileCommandService} and orchestrates the creation
+ * of {@link Profile} aggregates. Enforces the uniqueness invariant on
+ * email address before delegating persistence to the {@link ProfileRepository}.</p>
+ */
+@NullMarked
 @Service
 public class ProfileCommandServiceImpl implements ProfileCommandService {
     private final ProfileRepository profileRepository;
@@ -19,6 +28,17 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
     }
 
 
+    /**
+     * Handles the {@link CreateProfileCommand} to create and persist a new profile.
+     *
+     * <p>Rejects the command with a conflict error if a profile with the same
+     * email address already exists. Validation errors thrown by value-object
+     * constructors are caught and returned as {@code VALIDATION_ERROR} results.</p>
+     *
+     * @param command the create-profile command
+     * @return {@code Result.success} with the persisted profile,
+     *         or {@code Result.failure} with the relevant {@link ApplicationError}
+     */
     @Override
     public Result<Profile, ApplicationError> handle(CreateProfileCommand command) {
         try {
@@ -37,4 +57,3 @@ public class ProfileCommandServiceImpl implements ProfileCommandService {
         }
     }
 }
-

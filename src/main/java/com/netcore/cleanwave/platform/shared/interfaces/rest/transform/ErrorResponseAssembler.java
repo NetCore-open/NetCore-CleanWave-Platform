@@ -14,7 +14,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * Assembler for converting application errors toHTTP responses
+ * Assembler for converting application errors to HTTP responses
  */
 @NullMarked
 public class ErrorResponseAssembler {

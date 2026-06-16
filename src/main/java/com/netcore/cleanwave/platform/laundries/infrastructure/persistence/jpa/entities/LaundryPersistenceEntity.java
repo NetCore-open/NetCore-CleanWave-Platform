@@ -6,6 +6,18 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * JPA persistence entity for the
+ * {@link com.netcore.cleanwave.platform.laundries.domain.model.aggregates.Laundry}
+ * domain aggregate.
+ *
+ * <p>Maps the laundry's name, address, rating, image URL and operational status
+ * to the {@code laundries} database table. Identity and auditing fields are
+ * inherited from {@link AuditableAbstractPersistenceEntity}.</p>
+ *
+ * <p>This class intentionally lives in the infrastructure layer to keep
+ * JPA concerns out of the domain model.</p>
+ */
 @Entity
 @Table(name = "laundries")
 @Getter

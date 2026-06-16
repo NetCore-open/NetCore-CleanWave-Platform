@@ -15,6 +15,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Spring Security filter that validates JWT tokens on every incoming HTTP request.
+ *
+ * <p>Intercepts the {@code Authorization: Bearer <token>} header, validates
+ * the JWT via {@link com.netcore.cleanwave.platform.iam.application.internal.outboundservices.tokens.TokenService},
+ * and populates the {@link org.springframework.security.core.context.SecurityContext}
+ * if the token is valid. Requests without a valid token are passed through
+ * unauthenticated and handled by downstream security rules.</p>
+ */
 @Component
 @NullMarked
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

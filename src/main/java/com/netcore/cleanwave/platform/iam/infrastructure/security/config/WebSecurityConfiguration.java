@@ -15,6 +15,14 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Spring Security configuration for the IAM bounded context.
+ *
+ * <p>Configures a stateless JWT-based security filter chain. Public endpoints
+ * (authentication and Swagger UI) are permitted without authentication;
+ * all other requests require a valid Bearer token. Method-level security
+ * ({@code @PreAuthorize}) is also enabled via {@code @EnableMethodSecurity}.</p>
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

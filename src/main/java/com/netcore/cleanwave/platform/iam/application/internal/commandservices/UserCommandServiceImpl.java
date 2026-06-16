@@ -9,10 +9,21 @@ import com.netcore.cleanwave.platform.iam.domain.model.commands.SignUpCommand;
 import com.netcore.cleanwave.platform.iam.domain.repositories.UserRepository;
 import com.netcore.cleanwave.platform.shared.application.result.ApplicationError;
 import com.netcore.cleanwave.platform.shared.application.result.Result;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 
+/**
+ * Application service implementation that handles user authentication write operations.
+ *
+ * <p>Implements {@link UserCommandService} and orchestrates user registration
+ * ({@link SignUpCommand}) and authentication ({@link SignInCommand}).
+ * Password hashing is delegated to the {@link HashingService} and token
+ * generation to the {@link TokenService}, keeping those concerns out of
+ * the domain model.</p>
+ */
+@NullMarked
 @Service
 public class UserCommandServiceImpl implements UserCommandService {
     private final UserRepository userRepository;
@@ -25,6 +36,16 @@ public class UserCommandServiceImpl implements UserCommandService {
         this.tokenService = tokenService;
     }
 
+    /**
+     * Handles the {@link SignUpCommand} to register a new user.
+     *
+     * <p>Rejects registration with a conflict error if a user with the same
+     * username already exists. The password is hashed before persistence.</p>
+     *
+     * @param command the sign-up command carrying the username, password and roles
+     * @return {@code Result.success} with the persisted {@link User},
+     *         or {@code Result.failure} with the relevant {@link ApplicationError}
+     */
     @Override
     public Result<User, ApplicationError> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username())) {
@@ -36,6 +57,17 @@ public class UserCommandServiceImpl implements UserCommandService {
         return Result.success(savedUser);
     }
 
+    /**
+     * Handles the {@link SignInCommand} to authenticate an existing user.
+     *
+     * <p>Returns a failure result if the user is not found or the password does
+     * not match. On success, generates and returns a JWT token alongside the
+     * user aggregate.</p>
+     *
+     * @param command the sign-in command carrying the username and plain-text password
+     * @return {@code Result.success} with a {@link UserAndToken} pair,
+     *         or {@code Result.failure} with the relevant {@link ApplicationError}
+     */
     @Override
     public Result<UserAndToken, ApplicationError> handle(SignInCommand command) {
         var userOpt = userRepository.findByUsername(command.username());
