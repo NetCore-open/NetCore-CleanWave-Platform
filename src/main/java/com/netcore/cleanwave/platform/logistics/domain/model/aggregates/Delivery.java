@@ -54,6 +54,16 @@ public class Delivery extends AbstractDomainAggregateRoot<Delivery> {
     @Nullable
     private String notes;
 
+    @Getter
+    @Setter
+    @Nullable
+    private java.util.Date createdAt;
+
+    @Getter
+    @Setter
+    @Nullable
+    private java.util.Date updatedAt;
+
     /**
      * Default constructor. Initialises the delivery status to {@link DeliveryStatus#PENDING}.
      */
