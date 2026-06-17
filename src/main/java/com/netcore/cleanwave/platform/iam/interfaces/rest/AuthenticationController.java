@@ -7,6 +7,9 @@ import com.netcore.cleanwave.platform.iam.interfaces.rest.transform.Authenticate
 import com.netcore.cleanwave.platform.iam.interfaces.rest.transform.SignInCommandFromResourceAssembler;
 import com.netcore.cleanwave.platform.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
 import com.netcore.cleanwave.platform.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
+import com.netcore.cleanwave.platform.profiles.application.queryservices.ProfileQueryService;
+import com.netcore.cleanwave.platform.profiles.domain.model.queries.GetProfileByEmailQuery;
+import com.netcore.cleanwave.platform.profiles.domain.model.valueobjects.EmailAddress;
 import com.netcore.cleanwave.platform.shared.interfaces.rest.transform.ResponseEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.jspecify.annotations.NullMarked;
@@ -35,9 +38,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final UserCommandService userCommandService;
+    private final ProfileQueryService profileQueryService;
 
-    public AuthenticationController(UserCommandService userCommandService) {
+    public AuthenticationController(UserCommandService userCommandService,
+                                    ProfileQueryService profileQueryService) {
         this.userCommandService = userCommandService;
+        this.profileQueryService = profileQueryService;
     }
 
     /**
@@ -71,7 +77,13 @@ public class AuthenticationController {
         var result = userCommandService.handle(command);
         return ResponseEntityAssembler.toResponseEntityFromResult(
                 result,
-                AuthenticatedUserResourceFromEntityAssembler::toResourceFromEntity,
+                userAndToken -> {
+                    var email = userAndToken.user().getUsername();
+                    var profileOpt = profileQueryService.handle(new GetProfileByEmailQuery(new EmailAddress(email)));
+                    var firstName = profileOpt.map(p -> p.getName().firstName()).orElse("");
+                    var lastName = profileOpt.map(p -> p.getName().lastName()).orElse("");
+                    return AuthenticatedUserResourceFromEntityAssembler.toResourceFromEntity(userAndToken, firstName, lastName);
+                },
                 HttpStatus.OK
         );
     }
