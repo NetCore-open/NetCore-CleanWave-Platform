@@ -61,14 +61,11 @@ public class OpenApiConfiguration {
         // Add server configurations
         openApi.servers(List.of(
                 new Server()
+                        .url("https://netcore-cleanwave-platform-production.up.railway.app")
+                        .description("Production Environment (Railway)"),
+                new Server()
                         .url("http://localhost:8080")
-                        .description("Local Development Environment"),
-                new Server()
-                        .url("https://staging-api.cleanwave.com")
-                        .description("Staging Environment"),
-                new Server()
-                        .url("https://api.cleanwave.com")
-                        .description("Production Environment")
+                        .description("Local Development Environment")
         ));
 
         // Add a security scheme
