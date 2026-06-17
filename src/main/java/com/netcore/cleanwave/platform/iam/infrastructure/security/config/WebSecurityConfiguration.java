@@ -75,7 +75,8 @@ public class WebSecurityConfiguration {
         var configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:4200",
-                "https://frontend-cleanwave.vercel.app"
+                "https://frontend-cleanwave.vercel.app",
+                "https://netcore-cleanwave-platform-production.up.railway.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
