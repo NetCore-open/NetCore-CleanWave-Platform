@@ -28,7 +28,7 @@ public class OrderPersistenceEntity extends AuditableAbstractPersistenceEntity {
     @Nullable
     private String notes;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItemPersistenceEntity> items = new ArrayList<>();
 
     protected OrderPersistenceEntity() {
