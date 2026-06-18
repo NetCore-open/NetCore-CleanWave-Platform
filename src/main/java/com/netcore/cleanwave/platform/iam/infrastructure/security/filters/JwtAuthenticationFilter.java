@@ -48,14 +48,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         var token = authHeader.substring(7);
         if (tokenService.validateToken(token)) {
-            var username = tokenService.getUsernameFromToken(token);
-            var userDetails = userDetailsService.loadUserByUsername(username);
+            try {
+                var username = tokenService.getUsernameFromToken(token);
+                var userDetails = userDetailsService.loadUserByUsername(username);
 
-            var authenticationToken = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
+                var authenticationToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
 
-            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            } catch (Exception e) {
+                // Si el token es válido pero el usuario ya no existe en la base de datos (ej. se borró o limpió la BD),
+                // ignoramos el token y dejamos que la petición continúe como "no autenticada" 
+                // para que no reviente con un error 403/500 en endpoints públicos.
+            }
         }
 
         filterChain.doFilter(request, response);
